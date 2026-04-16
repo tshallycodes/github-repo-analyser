@@ -1,0 +1,4 @@
+anthropic
+requests
+rich
+python-dotenv
