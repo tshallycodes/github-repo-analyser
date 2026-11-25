@@ -58,8 +58,8 @@ def analyse_repo(url: str) -> str:
     print("  → Running AI analysis...")
 
     response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=2000,
+        model="claude-opus-5-5",
+        max_tokens=8000,
         system="""You are a senior software engineer performing a technical code review.
 Analyse the provided GitHub repository and produce a clear, structured technical report.
 Be specific, practical, and honest. If code quality is poor, say so.""",
@@ -83,4 +83,5 @@ Your report must include these sections:
         ]
     )
 
-    return response.content[0].text
+    # Newer models can return thinking blocks before the answer; keep only the text.
+    return "".join(b.text for b in response.content if b.type == "text")

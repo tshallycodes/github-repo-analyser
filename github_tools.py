@@ -1,5 +1,9 @@
+import os
 import requests
 import base64
+
+# Optional: set GITHUB_TOKEN to raise the rate limit from 60 to 5,000 requests an hour.
+HEADERS = {"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}"} if os.getenv("GITHUB_TOKEN") else {}
 
 GITHUB_API = "https://api.github.com"
 
@@ -14,7 +18,7 @@ def parse_repo_url(url: str) -> tuple[str, str]:
 
 def get_repo_info(owner: str, repo: str) -> dict:
     """Fetch basic repo metadata."""
-    response = requests.get(f"{GITHUB_API}/repos/{owner}/{repo}")
+    response = requests.get(f"{GITHUB_API}/repos/{owner}/{repo}", headers=HEADERS)
     response.raise_for_status()
     data = response.json()
     return {
@@ -34,7 +38,8 @@ def get_file_tree(owner: str, repo: str, max_files: int = 50) -> list[str]:
     """Fetch the full file tree of the repo."""
     response = requests.get(
         f"{GITHUB_API}/repos/{owner}/{repo}/git/trees/HEAD",
-        params={"recursive": "1"}
+        params={"recursive": "1"},
+        headers=HEADERS,
     )
     response.raise_for_status()
     tree = response.json().get("tree", [])
@@ -47,7 +52,7 @@ def get_file_tree(owner: str, repo: str, max_files: int = 50) -> list[str]:
 
 def get_file_content(owner: str, repo: str, path: str, max_chars: int = 3000) -> str:
     """Fetch and decode a file's content from the repo."""
-    response = requests.get(f"{GITHUB_API}/repos/{owner}/{repo}/contents/{path}")
+    response = requests.get(f"{GITHUB_API}/repos/{owner}/{repo}/contents/{path}", headers=HEADERS)
     if response.status_code != 200:
         return ""
     data = response.json()
